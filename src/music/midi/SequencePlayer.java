@@ -41,23 +41,29 @@ public class SequencePlayer {
      * @throws InvalidMidiDataException
      */
     public SequencePlayer(int beatsPerMinute, int ticksPerBeat) throws MidiUnavailableException, InvalidMidiDataException {
-        synthesizer = MidiSystem.getSynthesizer();
-        synthesizer.open();
-        synthesizer.loadAllInstruments(synthesizer.getDefaultSoundbank());
+        try {
+            synthesizer = MidiSystem.getSynthesizer();
+            synthesizer.open();
+            synthesizer.loadAllInstruments(synthesizer.getDefaultSoundbank());
+
+            this.sequencer = MidiSystem.getSequencer();
+
+            // Create a sequence object with with tempo-based timing, where
+            // the resolution of the time step is based on ticks per quarter note
+            Sequence sequence = new Sequence(Sequence.PPQ, ticksPerBeat);
+            this.beatsPerMinute = beatsPerMinute;
+
+            // Create an empty track. Notes will be added to this track.
+            this.track = sequence.createTrack();
+
+            sequencer.setSequence(sequence);
+
+            checkRep();
+        }
+        catch (MidiUnavailableException | InvalidMidiDataException e){
+            throw (e);
+        }
         
-        this.sequencer = MidiSystem.getSequencer();
-
-        // Create a sequence object with with tempo-based timing, where
-        // the resolution of the time step is based on ticks per quarter note
-        Sequence sequence = new Sequence(Sequence.PPQ, ticksPerBeat);
-        this.beatsPerMinute = beatsPerMinute;
-
-        // Create an empty track. Notes will be added to this track.
-        this.track = sequence.createTrack();
-
-        sequencer.setSequence(sequence);
-
-        checkRep();
     }
 
     /**
